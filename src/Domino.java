@@ -64,7 +64,8 @@ class AgenteSimples implements Agente {
 }
 
 class AgenteReativoModelo implements Agente {
-    private Set<String> estadoInterno = new HashSet<>(); // Peças já jogadas na mesa
+    // Estado interno, armazena as peças já jogadas na mesa
+    private Set<String> estadoInterno = new HashSet<>();
 
     @Override
     public int indicePecaParaJogar(String mesa, String mao) {
@@ -72,25 +73,29 @@ class AgenteReativoModelo implements Agente {
         String[] pecasMesa = mesa.split("<");
         for (String peca : pecasMesa) {
             if (!peca.isEmpty()) {
-                estadoInterno.add(peca);
+                estadoInterno.add(peca); // Adiciona a peça ao estado interno
             }
         }
 
-        // Analisa as peças disponíveis na mão
+        // Verifica as peças na mão
         String[] maos = mao.split("<");
         for (int i = 1; i < maos.length; i++) {
             String peca = maos[i];
-            char lado1 = peca.charAt(0);
-            char lado2 = peca.charAt(2);
+            char lado1 = peca.charAt(0); // Primeiro número da peça
+            char lado2 = peca.charAt(2); // Segundo número da peça
 
-            // Verifica se a peça encaixa na mesa
-            char op1 = mesa.charAt(2);
-            char op2 = mesa.charAt(mesa.length() - 3);
+            // Obtém os números nas extremidades da mesa
+            char op1 = mesa.charAt(2); // Extremidade esquerda
+            char op2 = mesa.charAt(mesa.length() - 3); // Extremidade direita
+
+            // Verifica se a peça é válida para jogar
             if (lado1 == op1 || lado2 == op1 || lado1 == op2 || lado2 == op2) {
-                return i - 1;
+                return i - 1; // Retorna o índice da peça válida
             }
         }
-        return 0; // Retorna a primeira peça por padrão
+
+        // Caso nenhuma peça seja válida, retorna -1
+        return -1;
     }
 }
 
@@ -98,26 +103,33 @@ class AgenteBaseadoEmBusca implements Agente {
     @Override
     public int indicePecaParaJogar(String mesa, String mao) {
         String[] maos = mao.split("<");
-        int melhorIndice = -1;
-        int melhorPontuacao = -1;
+        int melhorIndice = -1; // Índice da melhor peça para jogar
+        int melhorPontuacao = -1; // Pontuação da melhor peça
 
-        char op1 = mesa.charAt(2);
-        char op2 = mesa.charAt(mesa.length() - 3);
+        // Obtém os números nas extremidades da mesa
+        char op1 = mesa.charAt(2); // Extremidade esquerda
+        char op2 = mesa.charAt(mesa.length() - 3); // Extremidade direita
 
+        // Avalia todas as peças da mão
         for (int i = 1; i < maos.length; i++) {
             String peca = maos[i];
-            char lado1 = peca.charAt(0);
-            char lado2 = peca.charAt(2);
+            char lado1 = peca.charAt(0); // Primeiro número da peça
+            char lado2 = peca.charAt(2); // Segundo número da peça
 
+            // Verifica se a peça pode ser jogada
             if (lado1 == op1 || lado2 == op1 || lado1 == op2 || lado2 == op2) {
-                int pontuacao = Character.getNumericValue(lado1) + Character.getNumericValue(lado2);
+                int pontuacao = Character.getNumericValue(lado1) + Character.getNumericValue(lado2); // Soma dos dois lados
+
+                // Atualiza a melhor peça com base na pontuação
                 if (pontuacao > melhorPontuacao) {
                     melhorPontuacao = pontuacao;
                     melhorIndice = i - 1;
                 }
             }
         }
-        return (melhorIndice != -1) ? melhorIndice : 0;
+
+        // Retorna o índice da melhor peça, ou -1 se nenhuma for válida
+        return (melhorIndice != -1) ? melhorIndice : -1;
     }
 }
 
@@ -312,14 +324,13 @@ public class Domino{
     }
 
     public static void main(String[] args) {
-        // Testando agentes com novos jogadores
-        Jogador jog1 = new Jogador("REATIVO", new AgenteReativoModelo());
-        System.out.println("Nome do Jogador 1: " + jog1.nome);
+        Jogador jogador1 = new Jogador("REATIVO", new AgenteReativoModelo());
+        System.out.println("Nome do Jogador 1: " + jogador1.nome);
 
-        Jogador jog2 = new Jogador("BUSCA", new AgenteBaseadoEmBusca());
-        System.out.println("Nome do Jogador 2: " + jog2.nome);
+        Jogador jogador2 = new Jogador("BUSCA", new AgenteBaseadoEmBusca());
+        System.out.println("Nome do Jogador 2: " + jogador2.nome);
 
-        Domino jogo = new Domino(jog1, jog2);
+        Domino jogo = new Domino(jogador1, jogador2);
 
         long miliSegundosDeIntervaloPorJogador = 100;
         int maximoDeJogadasInvalidas = 4;
